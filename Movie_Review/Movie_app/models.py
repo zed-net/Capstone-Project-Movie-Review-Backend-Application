@@ -43,7 +43,7 @@ family_friendly_choices = [
     
     
 class Movie(models.Model):
-    title = models.CharField(max_length=200)
+    title = models.CharField(max_length=200,unique=True)
     genre = models.CharField(max_length=50, choices=genres)
     release_date = models.DateField()
    
