@@ -5,14 +5,8 @@ from django.utils import timezone
 
 
 
-class user(models.Model):
-    name = models.CharField(max_length=100)
-    email = models.EmailField(unique=True)
-    password = models.CharField(max_length=100)
 
-    def __str__(self):
-        return self.name
-    
+
     
 genres = [
         ('Action', 'Action'),
@@ -46,7 +40,7 @@ class Movie(models.Model):
     title = models.CharField(max_length=200,unique=True)
     genre = models.CharField(max_length=50, choices=genres)
     release_date = models.DateField()
-   
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='movies', null=True)
     def average_rating(self):
         reviews = self.review_set.all()
         if reviews:
@@ -57,8 +51,7 @@ class Movie(models.Model):
         return self.title
     
     
-class review(models.Model):
-    #user = models.ForeignKey(user, on_delete=models.CASCADE)
+class Review(models.Model):
     movie = models.ForeignKey(Movie, on_delete=models.CASCADE)
     review_text = models.TextField()
     rating = models.IntegerField(choices=[(i, i) for i in range(1, 6)])
@@ -67,4 +60,4 @@ class review(models.Model):
     
 
     def __str__(self):
-        return self.movie.title
+        return  f"{self.user.username} - {self.movie.title}"
