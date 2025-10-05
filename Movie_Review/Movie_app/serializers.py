@@ -11,12 +11,22 @@ class MovieSerializer(serializers.ModelSerializer):
     class Meta:
         model = Movie
         fields = ['id', 'title', 'genre', 'release_date',  'average_rating']
-     
+        read_only_fields = ['owner']
+        
+    def create(self, validated_data):
+        # Assign the current user as the owner automatically
+        request = self.context.get('request')
+        if request and hasattr(request, 'user'):
+            validated_data['owner'] = request.user
+        return Movie.objects.create(**validated_data)    
+        
 #serilaztion for review model        
 class ReviewSerializer(serializers.ModelSerializer):
+    owner = serializers.ReadOnlyField(source='user.username')
     class Meta:
         model = Review
-        fields = ['id', 'movie', 'rating', 'review_text', 'family_friendly', 'created_at']
+        fields = ['id', 'owner', 'movie', 'review_text', 'rating', 'family_friendly', 'created_at']
+        read_only_fields = ['owner', 'created_at']
 
 
 #serilaztion for users with inbuilt user model      
@@ -35,15 +45,12 @@ class UserSerializer(ModelSerializer):
         return user
 
 #serilaztion for registration
-class RegisterView(generics.CreateAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = [AllowAny]  
-    
-    def perform_create(self, serializer):
-        serializer.save()
+class RegisterSerializer(ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['username', 'password', 'email']
+        extra_kwargs = {'password': {'write_only': True}}
 
-    def create(self, request, *args, **kwargs):
-        response = super().create(request, *args, **kwargs)
-        # After successful signup, redirect to login URL
-        return redirect('login')
+    def create(self, validated_data):
+        user = User.objects.create_user(**validated_data)
+        return user

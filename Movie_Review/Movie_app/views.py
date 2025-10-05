@@ -1,5 +1,5 @@
 from .models import Movie, Review
-from .serializers import MovieSerializer, ReviewSerializer
+from .serializers import MovieSerializer, ReviewSerializer, RegisterSerializer
 from rest_framework import viewsets
 from rest_framework import filters
 from django.contrib.auth.models import User
@@ -8,6 +8,7 @@ from rest_framework.serializers import ModelSerializer
 from rest_framework import generics,permissions
 from .permissions import IsOwnerOrAdminOrReadOnly, IsOwnerOrAdminOrReadOnly
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from django.contrib.auth import login
 
 
 # Viewset for all movies with search and ordering functionality
@@ -26,10 +27,13 @@ class MovieViewSet(viewsets.ModelViewSet):
     serializer_class = MovieSerializer
 # Only authenticated users can create, update, or delete movies    
     permission_classes = [permissions.IsAuthenticated, IsOwnerOrAdminOrReadOnly]
-
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
 # ties the movie creation to the logged in user
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        serializer.save(owner=self.request.user)
 
 # Viewset for Review model
 class ReviewViewSet(viewsets.ModelViewSet):
@@ -39,7 +43,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrAdminOrReadOnly]
 # ties the review creation to the logged in user  
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        serializer.save(owner=self.request.user)
     
     
     
@@ -59,7 +63,15 @@ class UserSerializer(ModelSerializer):
         return user
 
 #viewset for user registration
+
+
+
 class RegisterView(generics.CreateAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
+    serializer_class = RegisterSerializer
     permission_classes = [AllowAny]
+
+    def perform_create(self, serializer):
+        user = serializer.save()
+        # Automatically log in user after signup (optional)
+        login(self.request, user)
+        return user

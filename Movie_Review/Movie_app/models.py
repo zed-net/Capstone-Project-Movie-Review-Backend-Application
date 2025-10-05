@@ -52,6 +52,7 @@ class Movie(models.Model):
     
     
 class Review(models.Model):
+    owner = models.ForeignKey(User, on_delete=models.CASCADE)
     movie = models.ForeignKey(Movie, on_delete=models.CASCADE)
     review_text = models.TextField()
     rating = models.IntegerField(choices=[(i, i) for i in range(1, 6)])
