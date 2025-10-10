@@ -39,6 +39,9 @@ class MovieViewSet(viewsets.ModelViewSet):
 class ReviewViewSet(viewsets.ModelViewSet):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer 
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    ordering_fields = ['movie' ]
+    search_fields = ['movie__title', 'rating']
 # Only authenticated users can create, update, or delete reviews and only owners or admins can edit/delete  
     permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrAdminOrReadOnly]
 # ties the review creation to the logged in user  

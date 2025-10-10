@@ -22,12 +22,17 @@ class MovieSerializer(serializers.ModelSerializer):
         
 #serilaztion for review model        
 class ReviewSerializer(serializers.ModelSerializer):
+    #movie = serializers.StringRelatedField(read_only=True)
+    movie_title = serializers.StringRelatedField(source='movie', read_only=True)
     owner = serializers.ReadOnlyField(source='user.username')
     class Meta:
         model = Review
-        fields = ['id', 'owner', 'movie', 'review_text', 'rating', 'family_friendly', 'created_at']
+        fields = ['id','movie_title', 'owner','movie' ,'review_text', 'rating', 'family_friendly', 'created_at']
         read_only_fields = ['owner', 'created_at']
 
+    family_friendly = serializers.SerializerMethodField()  # changinging the true/false to yes/no
+    def get_family_friendly(self, obj):
+        return "Yes" if obj.family_friendly else "No"
 
 #serilaztion for users with inbuilt user model      
 class UserSerializer(ModelSerializer):
