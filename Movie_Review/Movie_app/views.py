@@ -43,7 +43,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
     ordering_fields = ['movie' ]
     search_fields = ['movie__title', 'rating']
 # Only authenticated users can create, update, or delete reviews and only owners or admins can edit/delete  
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrAdminOrReadOnly]
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrAdminOrReadOnly]
 # ties the review creation to the logged in user  
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
@@ -65,16 +65,15 @@ class UserSerializer(ModelSerializer):
         )
         return user
 
+
+
 #viewset for user registration
-
-
-
 class RegisterView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
     permission_classes = [AllowAny]
 
     def perform_create(self, serializer):
         user = serializer.save()
-        # Automatically log in user after signup (optional)
+        # Automatically log in user after signup 
         login(self.request, user)
         return user

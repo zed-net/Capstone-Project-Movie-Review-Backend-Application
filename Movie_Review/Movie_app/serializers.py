@@ -34,7 +34,7 @@ class ReviewSerializer(serializers.ModelSerializer):
     def get_family_friendly(self, obj):
         return "Yes" if obj.family_friendly else "No"
 
-#serilaztion for users with inbuilt user model      
+#serilaztion for users with in built user model      
 class UserSerializer(ModelSerializer):
     class Meta:
         model = User
